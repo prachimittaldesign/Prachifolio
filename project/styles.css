@@ -1,0 +1,397 @@
+/* Portfolio — Prachi Mittal */
+:root {
+  --bg: #f5efe4;
+  --ink: #1b1b1b;
+  --ink-soft: #4a463f;
+  --paper: #fbf7ee;
+  --line: #2a2622;
+  --road: #d6cfbe;
+  --road-edge: #b8b0a0;
+  --grass-q3: #b9d68a;   /* consumer-simple, meadow */
+  --grass-q3-side: #8eb46a;
+  --grass-q2: #6fae6a;   /* enterprise-simple, forest */
+  --grass-q2-side: #5a8e57;
+  --tech-q1: #8fb6d0;    /* enterprise-complex, blueprint blue */
+  --tech-q1-side: #6f96b0;
+  --sand-q4: #e6c389;    /* consumer-complex, terracotta sand */
+  --sand-q4-side: #c69e64;
+  --side-shadow: rgba(0,0,0,0.18);
+  --tile-stroke: #2a2622;
+}
+
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.world-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--paper);
+  isolation: isolate;
+  cursor: grab;
+  touch-action: none;
+}
+.world-stage.dragging { cursor: grabbing; }
+.world-stage.dragging .tile { transition: none; }
+
+.world-stage.blueprint {
+  --bg: #eaf3f6;
+  --paper: #eef6f8;
+  --ink: #0d2030;
+  --ink-soft: #2a4458;
+  --road: #dceaf0;
+  --road-edge: #b9d2dd;
+  --grass-q3: #d8e6ec;
+  --grass-q3-side: #b9d2dd;
+  --grass-q2: #c8dde6;
+  --grass-q2-side: #a3c2d0;
+  --tech-q1: #87b3c8;
+  --tech-q1-side: #6796ab;
+  --sand-q4: #b9d2dd;
+  --sand-q4-side: #95b6c5;
+  --line: #0d2030;
+  --tile-stroke: #0d2030;
+}
+
+/* Subtle paper grain */
+.world-stage::before {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(0,0,0,0.025), transparent 40%),
+    radial-gradient(circle at 80% 90%, rgba(0,0,0,0.03), transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.world-stage.blueprint::before {
+  background-image:
+    linear-gradient(rgba(13,32,48,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13,32,48,0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.6;
+}
+
+/* Camera (the iso plane) */
+.camera {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0; height: 0;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  will-change: transform;
+}
+
+/* Tiles */
+.tile {
+  position: absolute;
+  left: 0; top: 0;
+  transform: translate(-50%, -50%) translate(var(--sx, 0px), var(--sy, 0px))
+             translate(var(--ox, 0px), var(--oy, 0px))
+             translateY(calc(-1 * var(--lift, 0px)));
+  transition: transform 320ms cubic-bezier(.2,.7,.2,1.05);
+  cursor: pointer;
+  will-change: transform;
+}
+
+.tile svg { display: block; overflow: visible; }
+
+.tile .shadow {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 200px; height: 100px;
+  transform: translate(-50%, -50%) translateY(20px) scale(0.85);
+  background: radial-gradient(ellipse, rgba(0,0,0,0.22), transparent 65%);
+  pointer-events: none;
+  opacity: var(--shadow-op, 0.35);
+  transition: opacity 320ms;
+  z-index: -1;
+}
+
+.tile:hover { z-index: 5; }
+.tile.hub { z-index: 2; cursor: default; }
+
+/* Tile labels */
+.tile-label {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) translateY(-6px);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  pointer-events: none;
+  text-align: center;
+  white-space: nowrap;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.tile-sub {
+  display: block;
+  font-size: 9px;
+  font-weight: 500;
+  opacity: 0.6;
+  margin-top: 2px;
+  letter-spacing: 0.12em;
+}
+
+/* Hero */
+.hero {
+  position: absolute;
+  z-index: 20;
+  pointer-events: none;
+  transition: top 900ms cubic-bezier(.6,.05,.2,1),
+              left 900ms cubic-bezier(.6,.05,.2,1),
+              transform 900ms cubic-bezier(.6,.05,.2,1);
+}
+
+.hero.center {
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.hero.dock {
+  top: 32px; left: 40px;
+  transform: translate(0, 0) scale(0.62);
+  transform-origin: top left;
+}
+
+.hero-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.hero-name {
+  font-size: 96px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  line-height: 0.9;
+}
+
+.hero-box {
+  border: 4px solid var(--ink);
+  border-radius: 22px;
+  padding: 8px 26px 10px;
+  font-size: 84px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.hero-tag {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  letter-spacing: 0.02em;
+}
+
+.world-stage.blueprint .hero-name,
+.world-stage.blueprint .hero-box,
+.world-stage.blueprint .hero-tag { color: var(--ink); }
+.world-stage.blueprint .hero-box { border-color: var(--ink); }
+
+/* Axis labels */
+.axis-label {
+  position: absolute;
+  z-index: 10;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  opacity: 0.7;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.axis-label.tl { top: 24px; left: 50%; transform: translateX(-50%); }
+.axis-label.bl { bottom: 24px; left: 50%; transform: translateX(-50%); }
+.axis-label.lt { left: 32px; top: 50%; transform: translateY(-50%) rotate(-90deg); transform-origin: left center; }
+.axis-label.rt { right: 32px; top: 50%; transform: translateY(-50%) rotate(90deg); transform-origin: right center; }
+
+.axis-label .arrow { font-size: 14px; }
+
+/* Corner panel */
+.corner-panel {
+  position: absolute;
+  z-index: 15;
+  bottom: 28px;
+  right: 32px;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 14px;
+  padding: 18px 20px;
+  width: 280px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12px;
+  color: var(--ink);
+}
+.world-stage.blueprint .corner-panel {
+  background: rgba(255,255,255,0.55);
+  border-color: rgba(13,32,48,0.15);
+}
+
+.corner-panel h4 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.corner-panel p {
+  margin: 0 0 14px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.corner-panel .links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.corner-panel a {
+  display: inline-block;
+  padding: 6px 10px;
+  background: var(--ink);
+  color: var(--paper);
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  transition: transform 200ms;
+}
+.corner-panel a:hover { transform: translateY(-2px); }
+.corner-panel a.ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid rgba(0,0,0,0.2);
+}
+
+/* Compass / hint */
+.hint {
+  position: absolute;
+  bottom: 28px;
+  left: 32px;
+  z-index: 15;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  opacity: 0.55;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hint .dot {
+  width: 6px; height: 6px; border-radius: 999px;
+  background: var(--ink-soft);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.4); }
+}
+
+/* Tile detail card */
+.detail-card {
+  position: absolute;
+  z-index: 30;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 16px;
+  padding: 22px 24px;
+  width: 360px;
+  font-family: 'Inter', system-ui, sans-serif;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  transform: translate(-50%, calc(-100% - 24px));
+  pointer-events: auto;
+}
+.detail-card .eyebrow {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+.detail-card h3 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.detail-card p {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+.detail-card .meta {
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+.detail-card .chip {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(0,0,0,0.06);
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: var(--ink);
+}
+.detail-card .close {
+  position: absolute; top: 12px; right: 12px;
+  width: 28px; height: 28px;
+  border: none; background: rgba(0,0,0,0.06);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* Cloud / ambient */
+.clouds {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.cloud {
+  position: absolute;
+  width: 120px; height: 30px;
+  background: rgba(255,255,255,0.55);
+  border-radius: 999px;
+  filter: blur(2px);
+  animation: drift 60s linear infinite;
+}
+.world-stage.blueprint .cloud { background: rgba(255,255,255,0.4); }
+@keyframes drift {
+  from { transform: translateX(-200px); }
+  to { transform: translateX(2200px); }
+}

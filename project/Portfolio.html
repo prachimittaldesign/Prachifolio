@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Prachi Mittal — Portfolio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    /* Outer page chrome — sits BEHIND the design canvas */
+    html, body, #root { height: 100%; }
+    body { background: #f0eee9; font-family: 'Inter', system-ui, sans-serif; }
+    .artboard-host {
+      width: 100%; height: 100%; position: relative;
+      background: var(--bg, #f5efe4);
+      overflow: hidden;
+    }
+  </style>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script>
+    window.PORTFOLIO_TWEAKS_DEFAULTS = /*EDITMODE-BEGIN*/{
+      "flat": false,
+      "spacing": 1,
+      "hoverPush": 22
+    }/*EDITMODE-END*/;
+  </script>
+  <script type="text/babel" src="design-canvas.jsx"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="iso-core.jsx"></script>
+  <script type="text/babel" src="iso-tile.jsx"></script>
+  <script type="text/babel" src="projects.jsx"></script>
+  <script type="text/babel" src="world.jsx"></script>
+  <script type="text/babel" src="portfolio-world.jsx"></script>
+
+  <script type="text/babel" data-presets="env,react">
+    const { useState, useEffect } = React;
+
+    function ArtboardHost({ variant }) {
+      return (
+        <div className="artboard-host">
+          <PortfolioWorld variant={variant}/>
+        </div>
+      );
+    }
+
+    function App() {
+      return (
+        <DesignCanvas>
+          <DCSection
+            id="directions"
+            title="Prachi Mittal — Portfolio"
+            subtitle="Two directions, side-by-side. Pan to compare; click any artboard's expand icon for fullscreen."
+          >
+            <DCArtboard id="bright" label="A · Bright illustrative" width={1440} height={900}>
+              <ArtboardHost variant="bright"/>
+            </DCArtboard>
+            <DCArtboard id="blueprint" label="B · Architect's blueprint" width={1440} height={900}>
+              <ArtboardHost variant="blueprint"/>
+            </DCArtboard>
+          </DCSection>
+        </DesignCanvas>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+  </script>
+</body>
+</html>
