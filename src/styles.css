@@ -44,11 +44,19 @@ body {
     translate(var(--sx, 0px), var(--sy, 0px))
     translate(var(--ox, 0px), var(--oy, 0px))
     translateY(calc(-1 * var(--lift, 0px)));
-  transition: transform 300ms cubic-bezier(.2,.7,.2,1.05);
-  cursor: pointer; will-change: transform;
+  transition: transform 280ms cubic-bezier(.2,.8,.2,1.1), filter 280ms ease;
+  cursor: pointer; will-change: transform, filter;
+  filter: drop-shadow(0 5px 8px rgba(0,0,0,0.25));
 }
 .iso-tile svg { display: block; overflow: visible; }
 .iso-tile:hover { z-index: 9 !important; }
+
+/* 3D hover: deep shadow stack */
+.iso-tile.is-hovered {
+  filter:
+    drop-shadow(0 22px 40px rgba(0,0,0,0.45))
+    drop-shadow(0 6px 14px rgba(0,0,0,0.3));
+}
 
 /* Tile labels */
 .tile-label {

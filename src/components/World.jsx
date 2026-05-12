@@ -34,7 +34,7 @@ export default function World({ onSelect }) {
       const rx = (t.gx - t.gy) / Math.max(0.5, dist);
       const ry = -(t.gx + t.gy) / (2 * Math.max(0.5, dist));
       const d = Math.hypot(sx - mx, sy - my);
-      const sep = 4 + Math.max(0, 1 - d / 310) * 22;
+      const sep = 6 + Math.max(0, 1 - d / 300) * 34;
       el.style.setProperty('--ox', `${rx * sep}px`);
       el.style.setProperty('--oy', `${ry * sep}px`);
     });
@@ -110,23 +110,24 @@ export default function World({ onSelect }) {
           const { sx, sy } = gridToScreen(tile.gx, tile.gy, SPACING);
           const q = quadrant(tile.gx, tile.gy);
           const size = tile.scale || 1;
-          const lift = hovered === tile.id ? 22 : 0;
+          const isHovered = hovered === tile.id;
+          const lift = isHovered ? 44 : 0;
           return (
             <div
               key={tile.id}
               ref={el => { tileRefs.current[tile.id] = el; }}
-              className="iso-tile"
+              className={`iso-tile${isHovered ? ' is-hovered' : ''}`}
               style={{
                 '--sx': `${sx}px`,
                 '--sy': `${sy}px`,
                 '--lift': `${lift}px`,
-                zIndex: Math.round(-(tile.gx + tile.gy) * 10 + 500),
+                zIndex: Math.round(-(tile.gx + tile.gy) * 10 + 500 + (isHovered ? 20 : 0)),
               }}
               onPointerEnter={() => { if (!drag.current.active) setHovered(tile.id); }}
               onPointerLeave={() => setHovered(null)}
               onClick={() => handleTileClick(tile)}
             >
-              <IsoTile biome={q} glyph={tile.glyph} size={size}/>
+              <IsoTile biome={q} glyph={tile.glyph} size={size} hovered={isHovered}/>
               <div className="tile-label" style={{ fontSize: `${9 + size * 1.6}px` }}>
                 {tile.label}
                 <span className="tile-sub">{tile.sub}</span>
