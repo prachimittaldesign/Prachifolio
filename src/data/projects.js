@@ -17,6 +17,7 @@ export const PROJECTS = [
       { heading: 'World AI Summit', body: 'The live demo at the summit was the final proof. I was on-site, watching real operators use the interface for the first time, taking notes for v2.' },
     ],
   },
+
   {
     id: 'izak', gx: 6, gy: 4, scale: 1.50,
     label: 'iZak', sub: '3D SCANNING · LiDAR', glyph: 'scanner',
@@ -35,6 +36,7 @@ export const PROJECTS = [
       { heading: 'Expert / Assisted Toggle', body: 'A single toggle at session start that switches the entire UI between two modes — the product\'s headline feature, born from research insights about trust and legibility.' },
     ],
   },
+
   {
     id: 'paas', gx: 4, gy: 2, scale: 1.20,
     label: 'PaaS', sub: 'PROMPT LIBRARY', glyph: 'servers',
@@ -53,6 +55,7 @@ export const PROJECTS = [
       { heading: 'Deploy Flow', body: 'One-click deploy to staging or production, with rollback. An API key panel for engineers and an embed snippet for non-technical users.' },
     ],
   },
+
   {
     id: 'snaplogic', gx: 2, gy: 2, scale: 1.00,
     label: 'SnapLogic', sub: 'CMS · CONNECTORS', glyph: 'connector',
@@ -71,6 +74,7 @@ export const PROJECTS = [
       { heading: 'Handoff', body: 'Full component spec in Figma with annotated edge cases, error states, and responsive behaviour. Pair-designed 3 sessions with the lead engineer to resolve ambiguity before build.' },
     ],
   },
+
   {
     id: 'lms', gx: -2, gy: 2, scale: 0.90,
     label: 'SnapLogic LMS', sub: 'ACADEMY · 6 COURSES', glyph: 'book',
@@ -89,6 +93,7 @@ export const PROJECTS = [
       { heading: 'Handoff', body: 'Delivered a component spec with the template system documented for future course creation. The content team can now author new courses without a designer in the loop.' },
     ],
   },
+
   {
     id: 'holacracy', gx: -4, gy: 4, scale: 1.15,
     label: 'Holacracy', sub: 'INTERNAL TOOLING', glyph: 'circles',
@@ -107,6 +112,7 @@ export const PROJECTS = [
       { heading: 'Role Directory', body: 'Searchable directory of all roles across all circles, with accountabilities displayed as plain-language statements. Live link to the person currently filling each role.' },
     ],
   },
+
   {
     id: 'kya', gx: -2, gy: 4, scale: 1.05,
     label: 'KYA', sub: 'DOCUMENT WORKFLOW', glyph: 'docs',
@@ -125,6 +131,7 @@ export const PROJECTS = [
       { heading: 'Notification System', body: 'Designed a digest notification model (not real-time noise). Each morning, one email per user with their pending actions, grouped by urgency.' },
     ],
   },
+
   {
     id: 'amplyfund', gx: 2, gy: -2, scale: 1.10,
     label: 'Amplyfund', sub: 'TV · FUNDRAISING', glyph: 'tv',
@@ -143,6 +150,7 @@ export const PROJECTS = [
       { heading: 'Onboarding', body: '3-screen onboarding sequence designed for the 10-foot experience: bold visuals, minimal copy (max 12 words per screen), voice-friendly button labels.' },
     ],
   },
+
   {
     id: 'voteiq', gx: 4, gy: -4, scale: 1.35,
     label: 'Vote IQ', sub: 'TV + WEB · CIVICS', glyph: 'ballot',
@@ -161,6 +169,7 @@ export const PROJECTS = [
       { heading: 'Collaboration', body: 'Khushi led the research synthesis; Cherry owned the TV visual design; I owned the web flows and the cross-platform design system. Weekly collaborative crits kept the two platforms coherent.' },
     ],
   },
+
   {
     id: 'mo', gx: -2, gy: -2, scale: 1.00,
     label: 'Mo', sub: 'MOBILE · HEALTHCARE', glyph: 'heart',
@@ -179,6 +188,7 @@ export const PROJECTS = [
       { heading: 'CEO Review', body: 'Presented to the CEO and Head of Design using an interactive Figma prototype. Walked through 3 key user journeys. Feedback led to one major pivot: adding a "quick log" shortcut to the app icon long-press.' },
     ],
   },
+
   {
     id: 'clink', gx: -4, gy: -2, scale: 0.85,
     label: 'Clink', sub: 'UI REDESIGN', glyph: 'bubble',
@@ -197,6 +207,7 @@ export const PROJECTS = [
       { heading: 'Mentoring', body: 'Ritesh shadowed 3 full design cycles before running his own. Created a "designer\'s field guide" for the team — 8 pages covering our critique culture, file hygiene, and stakeholder communication norms.' },
     ],
   },
+
   {
     id: 'revee', gx: -2, gy: -4, scale: 0.95,
     label: 'Revee', sub: 'FLOWS · QA', glyph: 'sprout',
@@ -215,6 +226,7 @@ export const PROJECTS = [
       { heading: 'First Ship', body: 'Watching Revee launch to real users was the moment that crystallised why this work matters. The pilot feedback informed a v2 brief — my first experience of the continuous design cycle.' },
     ],
   },
+
   {
     id: 'arch', gx: 6, gy: 6, scale: 1.10,
     label: 'Studio', sub: 'ARCHITECTURE · RES.', glyph: 'cottage',
