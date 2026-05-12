@@ -1,4 +1,4 @@
-import { HALF_W, HALF_H, BIOME } from '../data/iso.js';
+import { HALF_W, HALF_H, BIOME, BIOME_BLUEPRINT } from '../data/iso.js';
 import { Glyphs } from './Glyphs.jsx';
 
 const THICKNESS = 42; // stone side depth
@@ -92,12 +92,20 @@ function TerrainTexture({ biome, W, H }) {
   return null;
 }
 
-export default function IsoTile({ biome, glyph, size = 1, hovered = false }) {
+export default function IsoTile({ biome, glyph, size = 1, hovered = false, variant = 'bright' }) {
   const W = HALF_W * size;
   const H = HALF_H * size;
   const T = THICKNESS * size;
 
-  const { fill } = BIOME[biome] || { fill: '#fbf7ee' };
+  const isBlueprint = variant === 'blueprint';
+  const palette = isBlueprint ? BIOME_BLUEPRINT : BIOME;
+  const { fill } = palette[biome] || { fill: isBlueprint ? '#c2d8e4' : '#fbf7ee' };
+
+  // Stone side colours shift to cool blue-grey in blueprint mode
+  const stoneL = isBlueprint ? '#8aaabb' : '#9e9688';
+  const stoneR = isBlueprint ? '#6a8a9a' : '#766e60';
+  const strokeCol = isBlueprint ? '#0d2030' : '#2e2a24';
+  const topStroke = isBlueprint ? '#0d2030' : '#2a2622';
 
   const leftPts  = `${-W},0 0,${H} 0,${H+T} ${-W},${T}`;
   const rightPts = `${W},0 0,${H} 0,${H+T} ${W},${T}`;
@@ -114,24 +122,24 @@ export default function IsoTile({ biome, glyph, size = 1, hovered = false }) {
     >
       {/* Left stone face */}
       <polygon points={leftPts}
-               fill="#9e9688"
-               stroke="#2e2a24" strokeWidth="1.2" strokeLinejoin="round"/>
+               fill={stoneL}
+               stroke={strokeCol} strokeWidth="1.2" strokeLinejoin="round"/>
       <line x1={-W} y1={0} x2={0} y2={H}
             stroke="rgba(255,255,255,0.14)" strokeWidth="1.5"/>
       <StrataLines face="left" W={W} H={H} T={T}/>
-      <Fissure face="left" W={W} H={H} T={T}/>
+      {!isBlueprint && <Fissure face="left" W={W} H={H} T={T}/>}
 
       {/* Right stone face (darker) */}
       <polygon points={rightPts}
-               fill="#766e60"
-               stroke="#2e2a24" strokeWidth="1.2" strokeLinejoin="round"/>
+               fill={stoneR}
+               stroke={strokeCol} strokeWidth="1.2" strokeLinejoin="round"/>
       <StrataLines face="right" W={W} H={H} T={T}/>
-      <Fissure face="right" W={W} H={H} T={T}/>
+      {!isBlueprint && <Fissure face="right" W={W} H={H} T={T}/>}
 
       {/* Top face */}
       <polygon points={topPts}
                fill={fill}
-               stroke="#2a2622" strokeWidth="1.5" strokeLinejoin="round"/>
+               stroke={topStroke} strokeWidth="1.5" strokeLinejoin="round"/>
 
       <TerrainTexture biome={biome} W={W} H={H}/>
 

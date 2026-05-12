@@ -6,7 +6,7 @@ import RoadLayer from './RoadLayer.jsx';
 import Hero from './Hero.jsx';
 import AboutPanel from './AboutPanel.jsx';
 
-export default function World({ onSelect }) {
+export default function World({ onSelect, variant = 'bright' }) {
   const stageRef = useRef(null);
   const tileRefs = useRef({});
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -91,7 +91,7 @@ export default function World({ onSelect }) {
   return (
     <div
       ref={stageRef}
-      className={`world-stage ${dragging ? 'dragging' : ''}`}
+      className={`world-stage${variant === 'blueprint' ? ' blueprint' : ''}${dragging ? ' dragging' : ''}`}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -129,7 +129,7 @@ export default function World({ onSelect }) {
               onPointerEnter={() => { if (!drag.current.active) setHovered(tile.id); }}
               onPointerLeave={() => setHovered(null)}
             >
-              <IsoTile biome={q} glyph={tile.glyph} size={size} hovered={isHovered}/>
+              <IsoTile biome={q} glyph={tile.glyph} size={size} hovered={isHovered} variant={variant}/>
               <div className="tile-label" style={{ fontSize: `${9 + size * 1.6}px` }}>
                 {tile.label}
                 <span className="tile-sub">{tile.sub}</span>

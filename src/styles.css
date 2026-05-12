@@ -184,6 +184,49 @@ body {
 @keyframes drift { from { transform: translateX(-240px); } to { transform: translateX(2200px); } }
 
 /* ═══════════════════════════════════════════
+   BLUEPRINT VARIANT
+═══════════════════════════════════════════ */
+
+.world-stage.blueprint {
+  background: #eef6f8;
+}
+
+/* Blueprint grid overlay */
+.world-stage.blueprint::before {
+  background-image:
+    linear-gradient(rgba(13,32,48,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13,32,48,0.07) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.7;
+}
+
+/* Blueprint axis labels + hint */
+.world-stage.blueprint .axis-label,
+.world-stage.blueprint .hint { color: #2a4458; }
+
+/* Blueprint hero */
+.world-stage.blueprint .hero-name,
+.world-stage.blueprint .hero-box,
+.world-stage.blueprint .hero-tag { color: #0d2030; }
+.world-stage.blueprint .hero-box { border-color: #0d2030; }
+
+/* Blueprint tile labels */
+.world-stage.blueprint .tile-label { color: #0d2030; }
+
+/* Blueprint about panel */
+.world-stage.blueprint .about-panel {
+  background: rgba(238,246,248,0.82);
+  border-color: rgba(13,32,48,0.12);
+  color: #0d2030;
+}
+.world-stage.blueprint .about-panel h4 { color: #2a4458; }
+.world-stage.blueprint .about-links a.solid { background: #0d2030; }
+.world-stage.blueprint .about-links a.ghost { color: #0d2030; border-color: rgba(13,32,48,0.25); }
+
+/* Blueprint clouds — fainter */
+.world-stage.blueprint .cloud { background: rgba(200,225,235,0.5); }
+
+/* ═══════════════════════════════════════════
    CASE STUDY OVERLAY
 ═══════════════════════════════════════════ */
 
