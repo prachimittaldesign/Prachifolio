@@ -13,7 +13,7 @@ export default function World({ onSelect }) {
   const [dragging, setDragging] = useState(false);
   const [hovered, setHovered] = useState(null);
   const [docked, setDocked] = useState(false);
-  const drag = useRef({ active: false, startX: 0, startY: 0, ox: 0, oy: 0, moved: false });
+  const drag = useRef({ active: false, startX: 0, startY: 0, ox: 0, oy: 0, moved: false, tileId: null });
 
   useEffect(() => {
     const t = setTimeout(() => setDocked(true), 2400);
@@ -50,9 +50,9 @@ export default function World({ onSelect }) {
 
   const onPointerDown = useCallback(e => {
     if (e.button !== 0 && e.pointerType !== 'touch') return;
-    drag.current = { active: true, startX: e.clientX, startY: e.clientY, ox: pan.x, oy: pan.y, moved: false };
+    drag.current = { active: true, startX: e.clientX, startY: e.clientY, ox: pan.x, oy: pan.y, moved: false, tileId: hovered };
     e.currentTarget.setPointerCapture(e.pointerId);
-  }, [pan]);
+  }, [pan, hovered]);
 
   const onPointerMove = useCallback(e => {
     const ds = drag.current;
@@ -74,15 +74,18 @@ export default function World({ onSelect }) {
   const onPointerUp = useCallback(e => {
     const ds = drag.current;
     ds.active = false;
-    if (ds.moved) { setDragging(false); setTimeout(() => { ds.moved = false; }, 0); }
+    if (ds.moved) {
+      setDragging(false);
+      setTimeout(() => { ds.moved = false; }, 0);
+    } else if (ds.tileId) {
+      // setPointerCapture routes click to stage, so we handle tile activation here
+      const tile = PROJECTS.find(t => t.id === ds.tileId);
+      if (tile) {
+        const el = tileRefs.current[tile.id];
+        if (el) onSelect(tile, el.getBoundingClientRect());
+      }
+    }
     try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {}
-  }, []);
-
-  const handleTileClick = useCallback((tile) => {
-    if (drag.current.moved) return;
-    const el = tileRefs.current[tile.id];
-    if (!el) return;
-    onSelect(tile, el.getBoundingClientRect());
   }, [onSelect]);
 
   return (
@@ -125,7 +128,6 @@ export default function World({ onSelect }) {
               }}
               onPointerEnter={() => { if (!drag.current.active) setHovered(tile.id); }}
               onPointerLeave={() => setHovered(null)}
-              onClick={() => handleTileClick(tile)}
             >
               <IsoTile biome={q} glyph={tile.glyph} size={size} hovered={isHovered}/>
               <div className="tile-label" style={{ fontSize: `${9 + size * 1.6}px` }}>
