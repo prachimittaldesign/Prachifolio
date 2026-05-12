@@ -14,16 +14,8 @@ export function quadrant(gx, gy) {
 }
 
 export const BIOME = {
-  q1: { fill: '#8fb6d0', label: 'Enterprise · Complex' },
-  q2: { fill: '#6fae6a', label: 'Enterprise · Simple' },
-  q3: { fill: '#b9d68a', label: 'Consumer · Simple' },
-  q4: { fill: '#e6c389', label: 'Consumer · Complex' },
-};
-
-// Blueprint palette — monochromatic cool blues
-export const BIOME_BLUEPRINT = {
-  q1: { fill: '#87b3c8' },
-  q2: { fill: '#a8c8d8' },
-  q3: { fill: '#c2d8e4' },
-  q4: { fill: '#b0c8d8' },
+  q1: { fill: '#7ab0cc', side: '#5a90b2', label: 'Enterprise · Complex' },
+  q2: { fill: '#5ca858', side: '#478844', label: 'Enterprise · Simple' },
+  q3: { fill: '#a8cc6e', side: '#88aa50', label: 'Consumer · Simple' },
+  q4: { fill: '#e0b46a', side: '#c09444', label: 'Consumer · Complex' },
 };

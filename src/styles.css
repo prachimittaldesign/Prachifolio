@@ -32,7 +32,6 @@ body {
     radial-gradient(circle at 82% 88%, rgba(0,0,0,0.028), transparent 38%);
 }
 
-/* Camera */
 .camera {
   position: absolute; left: 50%; top: 50%;
   width: 0; height: 0;
@@ -50,20 +49,22 @@ body {
     translate(var(--sx, 0px), var(--sy, 0px))
     translate(var(--ox, 0px), var(--oy, 0px))
     translateY(calc(-1 * var(--lift, 0px)));
-  transition: transform 280ms cubic-bezier(.2,.8,.2,1.1), filter 280ms ease;
+  transition: transform 300ms cubic-bezier(.2,.8,.2,1.1), filter 300ms ease;
   cursor: pointer; will-change: transform, filter;
-  filter: drop-shadow(0 5px 8px rgba(0,0,0,0.25));
+  filter:
+    drop-shadow(0 8px 12px rgba(0,0,0,0.32))
+    drop-shadow(0 2px 4px rgba(0,0,0,0.18));
 }
 .iso-tile svg { display: block; overflow: visible; }
 .iso-tile:hover { z-index: 9 !important; }
 
 .iso-tile.is-hovered {
   filter:
-    drop-shadow(0 22px 40px rgba(0,0,0,0.45))
-    drop-shadow(0 6px 14px rgba(0,0,0,0.3));
+    drop-shadow(0 28px 48px rgba(0,0,0,0.52))
+    drop-shadow(0 10px 20px rgba(0,0,0,0.36))
+    drop-shadow(0 2px 6px rgba(0,0,0,0.22));
 }
 
-/* Tile labels */
 .tile-label {
   position: absolute; left: 50%; top: 50%;
   transform: translate(-50%, -50%) translateY(-5px);
@@ -184,53 +185,9 @@ body {
 @keyframes drift { from { transform: translateX(-240px); } to { transform: translateX(2200px); } }
 
 /* ═══════════════════════════════════════════
-   BLUEPRINT VARIANT
-═══════════════════════════════════════════ */
-
-.world-stage.blueprint {
-  background: #eef6f8;
-}
-
-/* Blueprint grid overlay */
-.world-stage.blueprint::before {
-  background-image:
-    linear-gradient(rgba(13,32,48,0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(13,32,48,0.07) 1px, transparent 1px);
-  background-size: 32px 32px;
-  opacity: 0.7;
-}
-
-/* Blueprint axis labels + hint */
-.world-stage.blueprint .axis-label,
-.world-stage.blueprint .hint { color: #2a4458; }
-
-/* Blueprint hero */
-.world-stage.blueprint .hero-name,
-.world-stage.blueprint .hero-box,
-.world-stage.blueprint .hero-tag { color: #0d2030; }
-.world-stage.blueprint .hero-box { border-color: #0d2030; }
-
-/* Blueprint tile labels */
-.world-stage.blueprint .tile-label { color: #0d2030; }
-
-/* Blueprint about panel */
-.world-stage.blueprint .about-panel {
-  background: rgba(238,246,248,0.82);
-  border-color: rgba(13,32,48,0.12);
-  color: #0d2030;
-}
-.world-stage.blueprint .about-panel h4 { color: #2a4458; }
-.world-stage.blueprint .about-links a.solid { background: #0d2030; }
-.world-stage.blueprint .about-links a.ghost { color: #0d2030; border-color: rgba(13,32,48,0.25); }
-
-/* Blueprint clouds — fainter */
-.world-stage.blueprint .cloud { background: rgba(200,225,235,0.5); }
-
-/* ═══════════════════════════════════════════
    CASE STUDY OVERLAY
 ═══════════════════════════════════════════ */
 
-/* Backdrop */
 .cs-backdrop {
   position: fixed; inset: 0; z-index: 48;
   background: rgba(251,247,238,0);
@@ -248,7 +205,6 @@ body {
   backdrop-filter: blur(0px);
 }
 
-/* Expanding panel */
 .cs-panel {
   position: fixed; z-index: 50;
   overflow: hidden;
@@ -264,7 +220,6 @@ body {
   box-shadow: none;
 }
 
-/* Accent top bar */
 .cs-accent-bar {
   position: absolute; top: 0; left: 0; right: 0; height: 4px;
   opacity: 0; transition: opacity 300ms 400ms;
@@ -272,7 +227,6 @@ body {
 }
 .cs-accent-bar.visible { opacity: 1; }
 
-/* Back button (fixed top-left) */
 .cs-back-wrap {
   position: fixed; top: 24px; left: 32px; z-index: 60;
   opacity: 0; transform: translateX(-12px);
@@ -301,7 +255,6 @@ body {
 }
 .cs-back svg { flex-shrink: 0; }
 
-/* Scrollable case study body */
 .cs-scroll {
   position: absolute; inset: 0;
   overflow-y: auto; overflow-x: hidden;
@@ -317,7 +270,6 @@ body {
   padding: 88px clamp(24px, 8vw, 80px) 100px;
 }
 
-/* Eyebrow */
 .cs-eyebrow {
   display: flex; align-items: center; gap: 10px;
   font-family: 'JetBrains Mono', monospace;
@@ -326,7 +278,6 @@ body {
 }
 .cs-eyebrow-dot { opacity: 0.35; }
 
-/* Title */
 .cs-title {
   font-family: 'Fraunces', Georgia, serif;
   font-size: clamp(48px, 8vw, 88px);
@@ -335,7 +286,6 @@ body {
   margin-bottom: 36px;
 }
 
-/* Meta strip */
 .cs-meta-strip {
   display: flex; flex-wrap: wrap; gap: 12px;
   margin-bottom: 20px;
@@ -355,7 +305,6 @@ body {
   font-size: 13px; font-weight: 600; color: #1b1b1b;
 }
 
-/* Tags */
 .cs-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 40px; }
 .cs-tag {
   font-family: 'JetBrains Mono', monospace;
@@ -364,30 +313,25 @@ body {
   border-radius: 999px; color: #1b1b1b;
 }
 
-/* Divider */
 .cs-divider {
   height: 1px; background: rgba(0,0,0,0.08);
   margin: 48px 0;
 }
 
-/* Block label */
 .cs-block-label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
   color: #4a463f; margin-bottom: 16px;
 }
 
-/* Overview */
 .cs-overview-block { margin-bottom: 48px; }
 .cs-overview-text {
   font-size: 20px; line-height: 1.7; color: #2a2622;
   font-weight: 400; max-width: 680px;
 }
 
-/* Hero image */
 .cs-hero-img { margin-bottom: 56px; }
 
-/* Two column */
 .cs-two-col {
   display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
   margin-bottom: 56px;
@@ -397,7 +341,6 @@ body {
   font-size: 15px; line-height: 1.75; color: #2a2622;
 }
 
-/* Sections grid */
 .cs-sections-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
   margin-bottom: 56px;
@@ -428,14 +371,12 @@ body {
   font-size: 14px; line-height: 1.7; color: #4a463f;
 }
 
-/* Image grid */
 .cs-img-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
   margin-bottom: 56px;
 }
 @media (max-width: 600px) { .cs-img-grid { grid-template-columns: 1fr; } }
 
-/* Image placeholder */
 .cs-img-placeholder {
   background: rgba(0,0,0,0.04);
   border: 1.5px dashed rgba(0,0,0,0.12);
@@ -454,7 +395,6 @@ body {
   color: rgba(0,0,0,0.28);
 }
 
-/* Outcome block */
 .cs-outcome-block {
   background: rgba(0,0,0,0.03);
   border: 1px solid rgba(0,0,0,0.07);
@@ -465,7 +405,6 @@ body {
   font-size: 18px; line-height: 1.7; color: #1b1b1b; font-weight: 500;
 }
 
-/* Footer back */
 .cs-footer { display: flex; justify-content: center; padding-bottom: 40px; }
 .cs-footer-back {
   display: flex; align-items: center; gap: 8px;
