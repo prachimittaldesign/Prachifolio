@@ -1,6 +1,6 @@
 export const HALF_W = 100;
 export const HALF_H = 50;
-export const SPACING = 1.45;
+export const SPACING = 1.0;
 
 export function gridToScreen(gx, gy, s = SPACING) {
   return { sx: (gx - gy) * HALF_W * s, sy: -(gx + gy) * HALF_H * s };

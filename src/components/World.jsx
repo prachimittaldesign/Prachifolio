@@ -1,12 +1,38 @@
 import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { PROJECTS } from '../data/projects.js';
-import { gridToScreen, quadrant, SPACING } from '../data/iso.js';
+import { gridToScreen, quadrant, SPACING, HALF_W, HALF_H } from '../data/iso.js';
 import IsoTile from './IsoTile.jsx';
-import RoadLayer from './RoadLayer.jsx';
 import Hero from './Hero.jsx';
 import AboutPanel from './AboutPanel.jsx';
 
-export default function World({ onSelect, variant = 'bright' }) {
+const GRID_RANGE = 8;
+const GROUND_T = 72; // must match THICKNESS in IsoTile.jsx
+
+function GroundTile() {
+  const W = HALF_W, H = HALF_H;
+  const leftPts  = `${-W},0 0,${H} 0,${H+GROUND_T} ${-W},${GROUND_T}`;
+  const rightPts = `${W},0 0,${H} 0,${H+GROUND_T} ${W},${GROUND_T}`;
+  const topPts   = `0,${-H} ${W},0 0,${H} ${-W},0`;
+  return (
+    <svg
+      width={W*2+4} height={H*2+GROUND_T+8}
+      viewBox={`${-W-2} ${-H-4} ${W*2+4} ${H*2+GROUND_T+8}`}
+      style={{ overflow: 'visible' }}
+    >
+      <polygon points={leftPts} fill="#b2a894" stroke="#1c1812" strokeWidth="1"/>
+      <polygon points={rightPts} fill="#6a6050" stroke="#1c1812" strokeWidth="1"/>
+      <polygon points={topPts} fill="#d8d2c4" stroke="#1a1610" strokeWidth="1.2"/>
+      <line x1={0} y1={-H} x2={-W} y2={0} stroke="rgba(255,255,255,0.18)" strokeWidth="1.2"/>
+      <line x1={0} y1={-H} x2={W}  y2={0} stroke="rgba(255,255,255,0.09)" strokeWidth="0.8"/>
+      <line x1={-W*0.72} y1={-H*0.36} x2={W*0.72} y2={H*0.36}
+            stroke="#9a9282" strokeWidth="0.9" opacity="0.35"/>
+      <line x1={W*0.72}  y1={-H*0.36} x2={-W*0.72} y2={H*0.36}
+            stroke="#9a9282" strokeWidth="0.9" opacity="0.35"/>
+    </svg>
+  );
+}
+
+export default function World({ onSelect }) {
   const stageRef = useRef(null);
   const tileRefs = useRef({});
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -20,10 +46,19 @@ export default function World({ onSelect, variant = 'bright' }) {
     return () => clearTimeout(t);
   }, []);
 
-  const sorted = useMemo(
-    () => [...PROJECTS].sort((a, b) => (b.gx + b.gy) - (a.gx + a.gy)),
-    []
-  );
+  // Merge project + ground tiles, painter-sorted back→front
+  const allTiles = useMemo(() => {
+    const projKeys = new Set(PROJECTS.map(t => `${t.gx},${t.gy}`));
+    const tiles = [...PROJECTS.map(t => ({ ...t, isProject: true }))];
+    for (let gx = -GRID_RANGE; gx <= GRID_RANGE; gx++) {
+      for (let gy = -GRID_RANGE; gy <= GRID_RANGE; gy++) {
+        if (!projKeys.has(`${gx},${gy}`)) {
+          tiles.push({ id: `g${gx}_${gy}`, gx, gy, isProject: false });
+        }
+      }
+    }
+    return tiles.sort((a, b) => (b.gx + b.gy) - (a.gx + a.gy));
+  }, []);
 
   const updateSep = useCallback((mx, my) => {
     PROJECTS.forEach(t => {
@@ -78,7 +113,6 @@ export default function World({ onSelect, variant = 'bright' }) {
       setDragging(false);
       setTimeout(() => { ds.moved = false; }, 0);
     } else if (ds.tileId) {
-      // setPointerCapture routes click to stage, so we handle tile activation here
       const tile = PROJECTS.find(t => t.id === ds.tileId);
       if (tile) {
         const el = tileRefs.current[tile.id];
@@ -91,7 +125,7 @@ export default function World({ onSelect, variant = 'bright' }) {
   return (
     <div
       ref={stageRef}
-      className={`world-stage${variant === 'blueprint' ? ' blueprint' : ''}${dragging ? ' dragging' : ''}`}
+      className={`world-stage ${dragging ? 'dragging' : ''}`}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -107,10 +141,27 @@ export default function World({ onSelect, variant = 'bright' }) {
         className="camera"
         style={{ transform: `translate(${pan.x}px, ${pan.y}px)` }}
       >
-        <RoadLayer/>
-
-        {sorted.map(tile => {
+        {allTiles.map(tile => {
           const { sx, sy } = gridToScreen(tile.gx, tile.gy, SPACING);
+
+          if (!tile.isProject) {
+            return (
+              <div
+                key={tile.id}
+                className="iso-tile ground-tile"
+                style={{
+                  '--sx': `${sx}px`,
+                  '--sy': `${sy}px`,
+                  '--lift': '0px',
+                  zIndex: Math.round(-(tile.gx + tile.gy) * 10 + 490),
+                  pointerEvents: 'none',
+                }}
+              >
+                <GroundTile/>
+              </div>
+            );
+          }
+
           const q = quadrant(tile.gx, tile.gy);
           const size = tile.scale || 1;
           const isHovered = hovered === tile.id;
@@ -124,12 +175,12 @@ export default function World({ onSelect, variant = 'bright' }) {
                 '--sx': `${sx}px`,
                 '--sy': `${sy}px`,
                 '--lift': `${lift}px`,
-                zIndex: Math.round(-(tile.gx + tile.gy) * 10 + 500 + (isHovered ? 20 : 0)),
+                zIndex: Math.round(-(tile.gx + tile.gy) * 10 + 510 + (isHovered ? 20 : 0)),
               }}
               onPointerEnter={() => { if (!drag.current.active) setHovered(tile.id); }}
               onPointerLeave={() => setHovered(null)}
             >
-              <IsoTile biome={q} glyph={tile.glyph} size={size} hovered={isHovered} variant={variant}/>
+              <IsoTile biome={q} glyph={tile.glyph} size={size} hovered={isHovered}/>
               <div className="tile-label" style={{ fontSize: `${9 + size * 1.6}px` }}>
                 {tile.label}
                 <span className="tile-sub">{tile.sub}</span>
