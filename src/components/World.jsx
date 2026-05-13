@@ -6,7 +6,7 @@ import Hero from './Hero.jsx';
 import AboutPanel from './AboutPanel.jsx';
 
 const GRID_RANGE = 8;
-const GROUND_T = 72; // must match THICKNESS in IsoTile.jsx
+const GROUND_T = 72;
 
 function GroundTile() {
   const W = HALF_W, H = HALF_H;
@@ -46,7 +46,6 @@ export default function World({ onSelect }) {
     return () => clearTimeout(t);
   }, []);
 
-  // Merge project + ground tiles, painter-sorted back→front
   const allTiles = useMemo(() => {
     const projKeys = new Set(PROJECTS.map(t => `${t.gx},${t.gy}`));
     const tiles = [...PROJECTS.map(t => ({ ...t, isProject: true }))];
@@ -188,6 +187,18 @@ export default function World({ onSelect }) {
             </div>
           );
         })}
+
+        {/* START signpost at world origin */}
+        <div className="start-marker">
+          <svg width="72" height="92" viewBox="0 0 72 92">
+            <rect x="33" y="38" width="6" height="54" fill="#8a7456" stroke="#3a2e1e" strokeWidth="1.2" rx="1"/>
+            <rect x="33" y="38" width="2" height="54" fill="rgba(255,255,255,0.25)"/>
+            <rect x="6" y="14" width="60" height="28" fill="#fdf9ee" stroke="#1b1b1b" strokeWidth="2" rx="3"/>
+            <rect x="9" y="17" width="54" height="22" fill="none" stroke="#1b1b1b" strokeWidth="0.6" rx="1.5"/>
+            <text x="36" y="33" textAnchor="middle" fontSize="11" fontWeight="700" fill="#1b1b1b" fontFamily="JetBrains Mono, monospace" letterSpacing="0.1em">START</text>
+            <path d="M 60 28 L 68 28 L 64 24 M 68 28 L 64 32" stroke="#1b1b1b" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
       </div>
 
       <div className="axis-label tl"><span>↑</span> Enterprise</div>
