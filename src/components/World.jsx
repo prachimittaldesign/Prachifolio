@@ -1,45 +1,10 @@
 import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { PROJECTS } from '../data/projects.js';
-import { gridToScreen, quadrant, SPACING, HALF_W, HALF_H } from '../data/iso.js';
+import { gridToScreen, quadrant, SPACING } from '../data/iso.js';
 import IsoTile from './IsoTile.jsx';
+import RoadLayer from './RoadLayer.jsx';
 import Hero from './Hero.jsx';
 import AboutPanel from './AboutPanel.jsx';
-
-const GROUND_T = 72;
-
-const ROAD_SEGMENTS = [
-  { type: 'h', gy:  0, gx1: -7, gx2:  7 },
-  { type: 'v', gx:  0, gy1: -6, gy2:  6 },
-  { type: 'h', gy:  2, gx1: -4, gx2:  6 },
-  { type: 'h', gy: -2, gx1: -4, gx2:  4 },
-  { type: 'h', gy:  4, gx1: -4, gx2:  5 },
-  { type: 'h', gy: -4, gx1: -2, gx2:  4 },
-  { type: 'v', gx:  2, gy1: -1, gy2:  4 },
-  { type: 'v', gx: -2, gy1: -4, gy2:  4 },
-  { type: 'v', gx:  4, gy1: -4, gy2:  3 },
-  { type: 'v', gx:  6, gy1:  0, gy2:  6 },
-  { type: 'v', gx: -4, gy1: -2, gy2:  5 },
-];
-
-function GroundTile() {
-  const W = HALF_W, H = HALF_H;
-  const leftPts  = `${-W},0 0,${H} 0,${H+GROUND_T} ${-W},${GROUND_T}`;
-  const rightPts = `${W},0 0,${H} 0,${H+GROUND_T} ${W},${GROUND_T}`;
-  const topPts   = `0,${-H} ${W},0 0,${H} ${-W},0`;
-  return (
-    <svg
-      width={W*2+4} height={H*2+GROUND_T+8}
-      viewBox={`${-W-2} ${-H-4} ${W*2+4} ${H*2+GROUND_T+8}`}
-      style={{ overflow: 'visible' }}
-    >
-      <polygon points={leftPts} fill="#b2a894" stroke="#1c1812" strokeWidth="1"/>
-      <polygon points={rightPts} fill="#6a6050" stroke="#1c1812" strokeWidth="1"/>
-      <polygon points={topPts} fill="#d8d2c4" stroke="#1a1610" strokeWidth="1.2"/>
-      <line x1={0} y1={-H} x2={-W} y2={0} stroke="rgba(255,255,255,0.18)" strokeWidth="1.2"/>
-      <line x1={0} y1={-H} x2={W}  y2={0} stroke="rgba(255,255,255,0.09)" strokeWidth="0.8"/>
-    </svg>
-  );
-}
 
 export default function World({ onSelect }) {
   const stageRef = useRef(null);
@@ -56,31 +21,9 @@ export default function World({ onSelect }) {
     return () => clearTimeout(t);
   }, []);
 
-  const allTiles = useMemo(() => {
-    const projKeys = new Set(PROJECTS.map(t => `${t.gx},${t.gy}`));
-    const tiles = [...PROJECTS.map(t => ({ ...t, isProject: true }))];
-    const roadKeys = new Set();
-    for (const seg of ROAD_SEGMENTS) {
-      if (seg.type === 'h') {
-        for (let gx = seg.gx1; gx <= seg.gx2; gx++) {
-          const key = `${gx},${seg.gy}`;
-          if (!projKeys.has(key) && !roadKeys.has(key)) {
-            roadKeys.add(key);
-            tiles.push({ id: `r${gx}_${seg.gy}`, gx, gy: seg.gy, isProject: false });
-          }
-        }
-      } else {
-        for (let gy = seg.gy1; gy <= seg.gy2; gy++) {
-          const key = `${seg.gx},${gy}`;
-          if (!projKeys.has(key) && !roadKeys.has(key)) {
-            roadKeys.add(key);
-            tiles.push({ id: `r${seg.gx}_${gy}`, gx: seg.gx, gy, isProject: false });
-          }
-        }
-      }
-    }
-    return tiles.sort((a, b) => (b.gx + b.gy) - (a.gx + a.gy));
-  }, []);
+  const sortedProjects = useMemo(() =>
+    [...PROJECTS].sort((a, b) => (b.gx + b.gy) - (a.gx + a.gy)),
+  []);
 
   const updateSep = useCallback((mx, my) => {
     PROJECTS.forEach(t => {
@@ -144,7 +87,6 @@ export default function World({ onSelect }) {
     try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {}
   }, [onSelect]);
 
-  // Scroll-to-zoom, anchored to cursor position (clamp 0.5–2×)
   useEffect(() => {
     const el = stageRef.current;
     if (!el) return;
@@ -189,27 +131,10 @@ export default function World({ onSelect }) {
         className="camera"
         style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})` }}
       >
-        {allTiles.map(tile => {
+        <div className="road-wrap"><RoadLayer/></div>
+
+        {sortedProjects.map(tile => {
           const { sx, sy } = gridToScreen(tile.gx, tile.gy, SPACING);
-
-          if (!tile.isProject) {
-            return (
-              <div
-                key={tile.id}
-                className="iso-tile ground-tile"
-                style={{
-                  '--sx': `${sx}px`,
-                  '--sy': `${sy}px`,
-                  '--lift': '0px',
-                  zIndex: Math.round(-(tile.gx + tile.gy) * 10 + 490),
-                  pointerEvents: 'none',
-                }}
-              >
-                <GroundTile/>
-              </div>
-            );
-          }
-
           const q = quadrant(tile.gx, tile.gy);
           const size = tile.scale || 1;
           const isHovered = hovered === tile.id;
