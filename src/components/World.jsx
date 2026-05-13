@@ -10,20 +10,20 @@ export default function World({ onSelect }) {
   const stageRef = useRef(null);
   const tileRefs = useRef({});
   const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [scale, setScale] = useState(1);
   const [dragging, setDragging] = useState(false);
   const [hovered, setHovered] = useState(null);
   const [docked, setDocked] = useState(false);
-  const drag = useRef({ active: false, startX: 0, startY: 0, ox: 0, oy: 0, moved: false, tileId: null });
+  const drag = useRef({ active: false, startX: 0, startY: 0, ox: 0, oy: 0, moved: false });
 
   useEffect(() => {
     const t = setTimeout(() => setDocked(true), 2400);
     return () => clearTimeout(t);
   }, []);
 
-  const sortedProjects = useMemo(() =>
-    [...PROJECTS].sort((a, b) => (b.gx + b.gy) - (a.gx + a.gy)),
-  []);
+  const sorted = useMemo(
+    () => [...PROJECTS].sort((a, b) => (b.gx + b.gy) - (a.gx + a.gy)),
+    []
+  );
 
   const updateSep = useCallback((mx, my) => {
     PROJECTS.forEach(t => {
@@ -50,9 +50,9 @@ export default function World({ onSelect }) {
 
   const onPointerDown = useCallback(e => {
     if (e.button !== 0 && e.pointerType !== 'touch') return;
-    drag.current = { active: true, startX: e.clientX, startY: e.clientY, ox: pan.x, oy: pan.y, moved: false, tileId: hovered };
+    drag.current = { active: true, startX: e.clientX, startY: e.clientY, ox: pan.x, oy: pan.y, moved: false };
     e.currentTarget.setPointerCapture(e.pointerId);
-  }, [pan, hovered]);
+  }, [pan]);
 
   const onPointerMove = useCallback(e => {
     const ds = drag.current;
@@ -65,52 +65,25 @@ export default function World({ onSelect }) {
     } else {
       const rect = stage.getBoundingClientRect();
       updateSep(
-        (e.clientX - rect.left - rect.width / 2 - pan.x) / scale,
-        (e.clientY - rect.top - rect.height / 2 - pan.y) / scale
+        e.clientX - rect.left - rect.width / 2 - pan.x,
+        e.clientY - rect.top - rect.height / 2 - pan.y
       );
     }
-  }, [pan, scale, updateSep]);
+  }, [pan, updateSep]);
 
   const onPointerUp = useCallback(e => {
     const ds = drag.current;
     ds.active = false;
-    if (ds.moved) {
-      setDragging(false);
-      setTimeout(() => { ds.moved = false; }, 0);
-    } else if (ds.tileId) {
-      const tile = PROJECTS.find(t => t.id === ds.tileId);
-      if (tile) {
-        const el = tileRefs.current[tile.id];
-        if (el) onSelect(tile, el.getBoundingClientRect());
-      }
-    }
+    if (ds.moved) { setDragging(false); setTimeout(() => { ds.moved = false; }, 0); }
     try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {}
-  }, [onSelect]);
-
-  useEffect(() => {
-    const el = stageRef.current;
-    if (!el) return;
-    const onWheel = (e) => {
-      e.preventDefault();
-      const rect = el.getBoundingClientRect();
-      const cx = rect.width / 2;
-      const cy = rect.height / 2;
-      const mx = e.clientX - rect.left;
-      const my = e.clientY - rect.top;
-      const delta = e.deltaY < 0 ? 1.1 : 1 / 1.1;
-      setScale(prevScale => {
-        const next = Math.max(0.5, Math.min(2, prevScale * delta));
-        const k = next / prevScale;
-        setPan(prevPan => ({
-          x: (1 - k) * (mx - cx) + k * prevPan.x,
-          y: (1 - k) * (my - cy) + k * prevPan.y,
-        }));
-        return next;
-      });
-    };
-    el.addEventListener('wheel', onWheel, { passive: false });
-    return () => el.removeEventListener('wheel', onWheel);
   }, []);
+
+  const handleTileClick = useCallback((tile) => {
+    if (drag.current.moved) return;
+    const el = tileRefs.current[tile.id];
+    if (!el) return;
+    onSelect(tile, el.getBoundingClientRect());
+  }, [onSelect]);
 
   return (
     <div
@@ -121,7 +94,7 @@ export default function World({ onSelect }) {
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
       onPointerLeave={() => { setHovered(null); resetSep(); }}
-      onDoubleClick={() => { setPan({ x: 0, y: 0 }); setScale(1); }}
+      onDoubleClick={() => setPan({ x: 0, y: 0 })}
     >
       <div className="cloud" style={{ top: '11%', animationDuration: '74s', animationDelay: '-8s' }}/>
       <div className="cloud" style={{ top: '22%', left: '-280px', opacity: 0.55, animationDuration: '98s', animationDelay: '-34s' }}/>
@@ -129,11 +102,11 @@ export default function World({ onSelect }) {
 
       <div
         className="camera"
-        style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})` }}
+        style={{ transform: `translate(${pan.x}px, ${pan.y}px)` }}
       >
-        <div className="road-wrap"><RoadLayer/></div>
+        <RoadLayer/>
 
-        {sortedProjects.map(tile => {
+        {sorted.map(tile => {
           const { sx, sy } = gridToScreen(tile.gx, tile.gy, SPACING);
           const q = quadrant(tile.gx, tile.gy);
           const size = tile.scale || 1;
@@ -148,10 +121,11 @@ export default function World({ onSelect }) {
                 '--sx': `${sx}px`,
                 '--sy': `${sy}px`,
                 '--lift': `${lift}px`,
-                zIndex: Math.round(-(tile.gx + tile.gy) * 10 + 520 + (isHovered ? 20 : 0)),
+                zIndex: Math.round(-(tile.gx + tile.gy) * 10 + 500 + (isHovered ? 20 : 0)),
               }}
               onPointerEnter={() => { if (!drag.current.active) setHovered(tile.id); }}
               onPointerLeave={() => setHovered(null)}
+              onClick={() => handleTileClick(tile)}
             >
               <IsoTile biome={q} glyph={tile.glyph} size={size} hovered={isHovered}/>
               <div className="tile-label" style={{ fontSize: `${9 + size * 1.6}px` }}>
@@ -161,18 +135,6 @@ export default function World({ onSelect }) {
             </div>
           );
         })}
-
-        {/* START signpost at world origin */}
-        <div className="start-marker">
-          <svg width="72" height="92" viewBox="0 0 72 92">
-            <rect x="33" y="38" width="6" height="54" fill="#8a7456" stroke="#3a2e1e" strokeWidth="1.2" rx="1"/>
-            <rect x="33" y="38" width="2" height="54" fill="rgba(255,255,255,0.25)"/>
-            <rect x="6" y="14" width="60" height="28" fill="#fdf9ee" stroke="#1b1b1b" strokeWidth="2" rx="3"/>
-            <rect x="9" y="17" width="54" height="22" fill="none" stroke="#1b1b1b" strokeWidth="0.6" rx="1.5"/>
-            <text x="36" y="33" textAnchor="middle" fontSize="11" fontWeight="700" fill="#1b1b1b" fontFamily="JetBrains Mono, monospace" letterSpacing="0.1em">START</text>
-            <path d="M 60 28 L 68 28 L 64 24 M 68 28 L 64 32" stroke="#1b1b1b" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </div>
       </div>
 
       <div className="axis-label tl"><span>↑</span> Enterprise</div>
@@ -185,7 +147,7 @@ export default function World({ onSelect }) {
 
       <div className="hint">
         <span className="hint-dot"/>
-        Drag to pan · Scroll to zoom · Double-click to recentre · Click a tile to explore
+        Drag to pan · Double-click to recentre · Click a tile to explore
       </div>
     </div>
   );
