@@ -5,7 +5,7 @@ import IsoTile from './IsoTile.jsx';
 import Hero from './Hero.jsx';
 import AboutPanel from './AboutPanel.jsx';
 
-const GROUND_T = 72;
+const TILE_T = 42; // match IsoTile THICKNESS
 
 const ROAD_SEGMENTS = [
   { type: 'h', gy:  0, gx1: -7, gx2:  7 },
@@ -22,7 +22,7 @@ const ROAD_SEGMENTS = [
 ];
 
 function GroundTile() {
-  const W = HALF_W, H = HALF_H, T = GROUND_T;
+  const W = HALF_W, H = HALF_H, T = TILE_T;
   const leftPts  = `${-W},0 0,${H} 0,${H+T} ${-W},${T}`;
   const rightPts = `${W},0 0,${H} 0,${H+T} ${W},${T}`;
   const topPts   = `0,${-H} ${W},0 0,${H} ${-W},0`;
@@ -35,12 +35,10 @@ function GroundTile() {
       <polygon points={leftPts} fill="#b8ae9e" stroke="#1c1812" strokeWidth="1"/>
       <polygon points={rightPts} fill="#6e6658" stroke="#1c1812" strokeWidth="1"/>
       <polygon points={topPts} fill="#d8d2c4" stroke="#1a1610" strokeWidth="1.2"/>
-      {/* X crosshatch dashes on top face */}
       <line x1={-W} y1={0} x2={W} y2={0}
             stroke="rgba(0,0,0,0.13)" strokeWidth="0.9" strokeDasharray="5 7"/>
       <line x1={0} y1={-H} x2={0} y2={H}
             stroke="rgba(0,0,0,0.13)" strokeWidth="0.9" strokeDasharray="5 7"/>
-      {/* Ridge highlights */}
       <line x1={0} y1={-H} x2={-W} y2={0} stroke="rgba(255,255,255,0.22)" strokeWidth="1.2"/>
       <line x1={0} y1={-H} x2={W}  y2={0} stroke="rgba(255,255,255,0.10)" strokeWidth="0.8"/>
     </svg>
@@ -64,26 +62,33 @@ export default function World({ onSelect }) {
   const allTiles = useMemo(() => {
     const projKeys = new Set(PROJECTS.map(t => `${t.gx},${t.gy}`));
     const tiles = [...PROJECTS.map(t => ({ ...t, isProject: true }))];
-    const roadKeys = new Set();
+
+    // Collect all road candidate positions
+    const roadCandidates = new Map();
     for (const seg of ROAD_SEGMENTS) {
       if (seg.type === 'h') {
         for (let gx = seg.gx1; gx <= seg.gx2; gx++) {
           const key = `${gx},${seg.gy}`;
-          if (!projKeys.has(key) && !roadKeys.has(key)) {
-            roadKeys.add(key);
-            tiles.push({ id: `r${gx}_${seg.gy}`, gx, gy: seg.gy, isProject: false });
-          }
+          if (!projKeys.has(key)) roadCandidates.set(key, { gx, gy: seg.gy });
         }
       } else {
         for (let gy = seg.gy1; gy <= seg.gy2; gy++) {
           const key = `${seg.gx},${gy}`;
-          if (!projKeys.has(key) && !roadKeys.has(key)) {
-            roadKeys.add(key);
-            tiles.push({ id: `r${seg.gx}_${gy}`, gx: seg.gx, gy, isProject: false });
-          }
+          if (!projKeys.has(key)) roadCandidates.set(key, { gx: seg.gx, gy });
         }
       }
     }
+
+    // Keep only road tiles directly adjacent to a project tile
+    const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
+    let idx = 0;
+    for (const [, { gx, gy }] of roadCandidates) {
+      const nextToProject = DIRS.some(([dx, dy]) => projKeys.has(`${gx+dx},${gy+dy}`));
+      if (nextToProject) {
+        tiles.push({ id: `r${idx++}`, gx, gy, isProject: false });
+      }
+    }
+
     return tiles.sort((a, b) => (b.gx + b.gy) - (a.gx + a.gy));
   }, []);
 
