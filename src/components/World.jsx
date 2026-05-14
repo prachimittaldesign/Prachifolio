@@ -5,7 +5,7 @@ import IsoTile from './IsoTile.jsx';
 import Hero from './Hero.jsx';
 import AboutPanel from './AboutPanel.jsx';
 
-const TILE_T = 42; // match IsoTile THICKNESS
+const TILE_T = 42;
 
 const ROAD_SEGMENTS = [
   { type: 'h', gy:  0, gx1: -7, gx2:  7 },
@@ -62,30 +62,25 @@ export default function World({ onSelect }) {
   const allTiles = useMemo(() => {
     const projKeys = new Set(PROJECTS.map(t => `${t.gx},${t.gy}`));
     const tiles = [...PROJECTS.map(t => ({ ...t, isProject: true }))];
+    const roadKeys = new Set();
 
-    // Collect all road candidate positions
-    const roadCandidates = new Map();
     for (const seg of ROAD_SEGMENTS) {
       if (seg.type === 'h') {
         for (let gx = seg.gx1; gx <= seg.gx2; gx++) {
           const key = `${gx},${seg.gy}`;
-          if (!projKeys.has(key)) roadCandidates.set(key, { gx, gy: seg.gy });
+          if (!projKeys.has(key) && !roadKeys.has(key)) {
+            roadKeys.add(key);
+            tiles.push({ id: `r${key}`, gx, gy: seg.gy, isProject: false });
+          }
         }
       } else {
         for (let gy = seg.gy1; gy <= seg.gy2; gy++) {
           const key = `${seg.gx},${gy}`;
-          if (!projKeys.has(key)) roadCandidates.set(key, { gx: seg.gx, gy });
+          if (!projKeys.has(key) && !roadKeys.has(key)) {
+            roadKeys.add(key);
+            tiles.push({ id: `r${key}`, gx: seg.gx, gy, isProject: false });
+          }
         }
-      }
-    }
-
-    // Keep only road tiles directly adjacent to a project tile
-    const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
-    let idx = 0;
-    for (const [, { gx, gy }] of roadCandidates) {
-      const nextToProject = DIRS.some(([dx, dy]) => projKeys.has(`${gx+dx},${gy+dy}`));
-      if (nextToProject) {
-        tiles.push({ id: `r${idx++}`, gx, gy, isProject: false });
       }
     }
 
