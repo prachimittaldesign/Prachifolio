@@ -2,7 +2,6 @@ import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { PROJECTS } from '../data/projects.js';
 import { gridToScreen, quadrant, SPACING } from '../data/iso.js';
 import IsoTile from './IsoTile.jsx';
-import RoadLayer from './RoadLayer.jsx';
 import Hero from './Hero.jsx';
 import AboutPanel from './AboutPanel.jsx';
 
@@ -106,8 +105,6 @@ export default function World({ onSelect }) {
         className="camera"
         style={{ transform: `translate(${pan.x}px, ${pan.y}px)` }}
       >
-        <RoadLayer/>
-
         {sorted.map(tile => {
           const { sx, sy } = gridToScreen(tile.gx, tile.gy, SPACING);
           const q = quadrant(tile.gx, tile.gy);
