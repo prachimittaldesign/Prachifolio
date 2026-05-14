@@ -1,9 +1,51 @@
 import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { PROJECTS } from '../data/projects.js';
-import { gridToScreen, quadrant, SPACING } from '../data/iso.js';
+import { gridToScreen, quadrant, SPACING, HALF_W, HALF_H } from '../data/iso.js';
 import IsoTile from './IsoTile.jsx';
 import Hero from './Hero.jsx';
 import AboutPanel from './AboutPanel.jsx';
+
+const GROUND_T = 72;
+
+const ROAD_SEGMENTS = [
+  { type: 'h', gy:  0, gx1: -7, gx2:  7 },
+  { type: 'v', gx:  0, gy1: -6, gy2:  6 },
+  { type: 'h', gy:  2, gx1: -4, gx2:  6 },
+  { type: 'h', gy: -2, gx1: -4, gx2:  4 },
+  { type: 'h', gy:  4, gx1: -4, gx2:  5 },
+  { type: 'h', gy: -4, gx1: -2, gx2:  4 },
+  { type: 'v', gx:  2, gy1: -1, gy2:  4 },
+  { type: 'v', gx: -2, gy1: -4, gy2:  4 },
+  { type: 'v', gx:  4, gy1: -4, gy2:  3 },
+  { type: 'v', gx:  6, gy1:  0, gy2:  6 },
+  { type: 'v', gx: -4, gy1: -2, gy2:  5 },
+];
+
+function GroundTile() {
+  const W = HALF_W, H = HALF_H, T = GROUND_T;
+  const leftPts  = `${-W},0 0,${H} 0,${H+T} ${-W},${T}`;
+  const rightPts = `${W},0 0,${H} 0,${H+T} ${W},${T}`;
+  const topPts   = `0,${-H} ${W},0 0,${H} ${-W},0`;
+  return (
+    <svg
+      width={W*2+4} height={H*2+T+8}
+      viewBox={`${-W-2} ${-H-4} ${W*2+4} ${H*2+T+8}`}
+      style={{ overflow: 'visible' }}
+    >
+      <polygon points={leftPts} fill="#b8ae9e" stroke="#1c1812" strokeWidth="1"/>
+      <polygon points={rightPts} fill="#6e6658" stroke="#1c1812" strokeWidth="1"/>
+      <polygon points={topPts} fill="#d8d2c4" stroke="#1a1610" strokeWidth="1.2"/>
+      {/* X crosshatch dashes on top face */}
+      <line x1={-W} y1={0} x2={W} y2={0}
+            stroke="rgba(0,0,0,0.13)" strokeWidth="0.9" strokeDasharray="5 7"/>
+      <line x1={0} y1={-H} x2={0} y2={H}
+            stroke="rgba(0,0,0,0.13)" strokeWidth="0.9" strokeDasharray="5 7"/>
+      {/* Ridge highlights */}
+      <line x1={0} y1={-H} x2={-W} y2={0} stroke="rgba(255,255,255,0.22)" strokeWidth="1.2"/>
+      <line x1={0} y1={-H} x2={W}  y2={0} stroke="rgba(255,255,255,0.10)" strokeWidth="0.8"/>
+    </svg>
+  );
+}
 
 export default function World({ onSelect }) {
   const stageRef = useRef(null);
@@ -19,10 +61,31 @@ export default function World({ onSelect }) {
     return () => clearTimeout(t);
   }, []);
 
-  const sorted = useMemo(
-    () => [...PROJECTS].sort((a, b) => (b.gx + b.gy) - (a.gx + a.gy)),
-    []
-  );
+  const allTiles = useMemo(() => {
+    const projKeys = new Set(PROJECTS.map(t => `${t.gx},${t.gy}`));
+    const tiles = [...PROJECTS.map(t => ({ ...t, isProject: true }))];
+    const roadKeys = new Set();
+    for (const seg of ROAD_SEGMENTS) {
+      if (seg.type === 'h') {
+        for (let gx = seg.gx1; gx <= seg.gx2; gx++) {
+          const key = `${gx},${seg.gy}`;
+          if (!projKeys.has(key) && !roadKeys.has(key)) {
+            roadKeys.add(key);
+            tiles.push({ id: `r${gx}_${seg.gy}`, gx, gy: seg.gy, isProject: false });
+          }
+        }
+      } else {
+        for (let gy = seg.gy1; gy <= seg.gy2; gy++) {
+          const key = `${seg.gx},${gy}`;
+          if (!projKeys.has(key) && !roadKeys.has(key)) {
+            roadKeys.add(key);
+            tiles.push({ id: `r${seg.gx}_${gy}`, gx: seg.gx, gy, isProject: false });
+          }
+        }
+      }
+    }
+    return tiles.sort((a, b) => (b.gx + b.gy) - (a.gx + a.gy));
+  }, []);
 
   const updateSep = useCallback((mx, my) => {
     PROJECTS.forEach(t => {
@@ -105,8 +168,27 @@ export default function World({ onSelect }) {
         className="camera"
         style={{ transform: `translate(${pan.x}px, ${pan.y}px)` }}
       >
-        {sorted.map(tile => {
+        {allTiles.map(tile => {
           const { sx, sy } = gridToScreen(tile.gx, tile.gy, SPACING);
+
+          if (!tile.isProject) {
+            return (
+              <div
+                key={tile.id}
+                className="iso-tile ground-tile"
+                style={{
+                  '--sx': `${sx}px`,
+                  '--sy': `${sy}px`,
+                  '--lift': '0px',
+                  zIndex: Math.round(-(tile.gx + tile.gy) * 10 + 490),
+                  pointerEvents: 'none',
+                }}
+              >
+                <GroundTile/>
+              </div>
+            );
+          }
+
           const q = quadrant(tile.gx, tile.gy);
           const size = tile.scale || 1;
           const isHovered = hovered === tile.id;
@@ -120,7 +202,7 @@ export default function World({ onSelect }) {
                 '--sx': `${sx}px`,
                 '--sy': `${sy}px`,
                 '--lift': `${lift}px`,
-                zIndex: Math.round(-(tile.gx + tile.gy) * 10 + 500 + (isHovered ? 20 : 0)),
+                zIndex: Math.round(-(tile.gx + tile.gy) * 10 + 520 + (isHovered ? 20 : 0)),
               }}
               onPointerEnter={() => { if (!drag.current.active) setHovered(tile.id); }}
               onPointerLeave={() => setHovered(null)}
@@ -133,6 +215,18 @@ export default function World({ onSelect }) {
             </div>
           );
         })}
+
+        {/* START signpost at world origin */}
+        <div className="start-marker">
+          <svg width="72" height="92" viewBox="0 0 72 92">
+            <rect x="33" y="38" width="6" height="54" fill="#8a7456" stroke="#3a2e1e" strokeWidth="1.2" rx="1"/>
+            <rect x="33" y="38" width="2" height="54" fill="rgba(255,255,255,0.25)"/>
+            <rect x="6" y="14" width="60" height="28" fill="#fdf9ee" stroke="#1b1b1b" strokeWidth="2" rx="3"/>
+            <rect x="9" y="17" width="54" height="22" fill="none" stroke="#1b1b1b" strokeWidth="0.6" rx="1.5"/>
+            <text x="36" y="33" textAnchor="middle" fontSize="11" fontWeight="700" fill="#1b1b1b" fontFamily="JetBrains Mono, monospace" letterSpacing="0.1em">START</text>
+            <path d="M 60 28 L 68 28 L 64 24 M 68 28 L 64 32" stroke="#1b1b1b" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
       </div>
 
       <div className="axis-label tl"><span>↑</span> Enterprise</div>
